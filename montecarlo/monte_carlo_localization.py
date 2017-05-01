@@ -11,7 +11,6 @@ from copy import copy
 from matplotlib import pyplot as plt
 from matplotlib import animation as animation
 from matplotlib.patches import Ellipse
-# from moviepy import editor as movie
 
 
 class Gaussian2D:
@@ -269,9 +268,9 @@ if __name__ == '__main__':
         robot.draw(sp, observations)
         actual_landmarks.draw()
         plt.legend()
-        plt.title("MonteCarloLocalization_test : frame" + str(i))
+        plt.title("MonteCarloLocalization_test : frame{0:04d}".format(i))
         # plt.show()
-        # plt.savefig("images/fig{0}.png".format(i))
+        plt.savefig("images/fig{0}.png".format(i))
 
 
     def animate(i):
@@ -280,7 +279,7 @@ if __name__ == '__main__':
         robot.move(0.2, math.pi / 180.0 * 20)
 
 
-    anim = animation.FuncAnimation(fig, animate, interval=200, frames=201)
+    anim = animation.FuncAnimation(fig, animate, interval=200, frames=30)
     anim.save("fig.gif", writer='imagemagick')
 
     # anim.save('mcl_anim.mp4', fps=5)
