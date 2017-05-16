@@ -9,9 +9,26 @@ import numpy as np
 import math, random
 from copy import copy
 from matplotlib import pyplot as plt
-from matplotlib import animation as animation
 from matplotlib.patches import Ellipse
+import subprocess
 
+class Recoder:
+    """
+    References : http://myenigma.hatenablog.com/entry/2017/04/22/132039
+    """
+    def __init__(self):
+        self.iframe = 0
+
+    def save_frame(self):
+        plt.savefig("recoder" + '{0:04d}'.format(self.iframe) + '.png')
+        self.iframe += 1
+
+    def save_movie(self, fname, d_pause):
+        cmd = "convert -delay " + str(int(d_pause * 100)) + \
+            " recoder*.png " + fname
+        subprocess.call(cmd, shell=True)
+        cmd = "rm recoder*.png"
+        subprocess.call(cmd, shell=True)
 
 class Gaussian2D:
     # 共分散行列、中心の座標を属性に持つ
@@ -252,37 +269,28 @@ class Robot:
 
 
 if __name__ == '__main__':
-    fig = plt.figure(figsize=(8, 8))
-
-    actual_landmarks = Landmarks(np.array([[-0.5, 0.0], [0.5, 0.0], [0.0, 0.5]]))
-
-    robot = Robot(0, 0, 0)  # ロボットを原点に
-
-
-    def draw(i, observations):
-        if i != 0:
-            plt.cla()
+    def draw(i,observations):
+        fig = plt.figure(i,figsize=(8, 8))
         sp = fig.add_subplot(111, aspect='equal')
-        sp.set_xlim(-1.0, 1.0)
-        sp.set_ylim(-0.5, 1.5)
-        robot.draw(sp, observations)
+        sp.set_xlim(-1.0,1.0)
+        sp.set_ylim(-0.5,1.5)
+        robot.draw(sp,observations)
         actual_landmarks.draw()
         plt.legend()
         plt.title("MonteCarloLocalization_test : frame{0:04d}".format(i))
         # plt.show()
         plt.savefig("images/fig{0}.png".format(i))
+        recoder.save_frame()
+        plt.close()
 
+    actual_landmarks = Landmarks(np.array([[-0.5, 0.0], [0.5, 0.0], [0.0, 0.5]]))
+    robot = Robot(0,0,0)      # ロボットを原点に
+    recoder = Recoder()
 
-    def animate(i):
+    # 観測、描画、移動の繰り返し
+    for i in range(0,30):
         obss = robot.observation(actual_landmarks)
-        draw(i, obss)
-        robot.move(0.2, math.pi / 180.0 * 20)
+        draw(i,obss)
+        robot.move(0.2,math.pi / 180.0 * 20)
 
-
-    anim = animation.FuncAnimation(fig, animate, interval=200, frames=30)
-    anim.save("fig.gif", writer='imagemagick')
-
-    # anim.save('mcl_anim.mp4', fps=5)
-
-    # clip = movie.VideoFileClip("mcl_anim.mp4")
-    # clip.write_gif("mcl_anim.gif")
+    recoder.save_movie("fig.gif", 0.1)
